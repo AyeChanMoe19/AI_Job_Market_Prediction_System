@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Job Market Predictor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+        }
+        
+        body.dark {
+            background-color: #121212;
+            color: white;
+        }
+
+        .hero {
+            height: 90vh;
+            background: url("images/R.jpg") center/cover no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero-content {
+            position: relative;
+            text-align: center;
+            color: white;
+            z-index: 2;
+        }
+
+        .hero-content h1 {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .hero-content p {
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .hero-buttons button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ffffff;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        body.dark .card {
+            background-color: #1e1e1e;
+            color: white;
+        }
+
+        button {
+            padding: 10px 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(45deg, #007bff, #00c6ff);
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        body.dark button {
+            background: linear-gradient(45deg, #444, #666);
+            color: white;
+        }
+        
+        select {
+            padding: 10px;
+            width: 220px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+            font-size: 14px;
+        }
+
+        body.dark select {
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        .mode-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(45deg, #007bff, #00c6ff);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .mode-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        body.dark .mode-btn {
+            background: linear-gradient(45deg, #444, #777);
+        }
+
+        #resultTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        #resultTable th,
+        #resultTable td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        #resultTable th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #resultTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        body.dark #resultTable tr:nth-child(even) {
+            background-color: #2a2a2a;
+        }
+
+        .skill-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            margin: 5px;
+            border-radius: 20px;
+            background: linear-gradient(45deg, #00ff4c, #00ff33);
+            color: white;
+            font-size: 13px;
+        }
+
+        .badge-high {
+            color: red;
+            font-weight: bold;
+        }
+
+        .badge-medium {
+            color: orange;
+            font-weight: bold;
+        }
+
+        .badge-low {
+            color: green;
+            font-weight: bold;
+        }
+
+    </style> 
+</head>
+
+<body>
+    
+<div class="hero">
+
+    <button id="modeBtn" onclick="toggleDarkMode()" class="mode-btn">
+        🌙 Dark Mode
+    </button>
+
+    <div class="hero-content">
+        <h1>AI Job Market Prediction System</h1>
+        <p>Analyze future trends in AI skills, jobs, and automation risk</p>
+
+        <select id="year">
+            <option value="">Select Year</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+        </select>
+
+        <div class="hero-buttons">
+            <button onclick="predict()"><i class="fa-solid fa-chart-line"></i>AI Skill Demand</button>
+            <button onclick="predictJobs()"><i class="fa-solid fa-briefcase"></i>Top Jobs</button>
+            <button onclick="predictSkills()"><i class="fa-solid fa-lightbulb"></i>Future Skills</button>
+            <button onclick="predictAutomationRisk()"><i class="fa-solid fa-triangle-exclamation"></i>High-Risk Jobs</button>
+            <button onclick="clearTable()"><i class="fa-solid fa-trash"></i> Clear</button>
+        </div>
+    </div>
+</div>    
+
+<div class="container">
+    <div class="card">
+        <h2>Prediction Results</h2>
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Year</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2 id="chartTitle" class="section-title"><i class="fa-solid fa-chart-column"></i> Top Jobs Chart</h2>
+        <canvas id="jobsChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h2 id="riskChartTitle" class="section-title">
+            <i class="fa-solid fa-triangle-exclamation"></i> High-Risk Jobs Chart
+        </h2>
+        <canvas id="riskChart"></canvas>
+    </div>
+</div>
+
+<script>
+    
+let jobsChart = null;
+let riskChart = null;
+
+function getYear() {
+    let year = document.getElementById("year").value;
+
+    if (!year) {
+        alert("Please enter a year");
+        return null;
+    }
+
+    return year;
+}
+
+function predict() {
+    let year = getYear();
+    if (!year) return;
+
+    fetch(`http://localhost:8081/api/predict-ai-skill-demand?year=${year}`)
+        .then(res => res.json())
+        .then(data => {
+            updateTable("AI Skill Demand", data.year, data.predicted_ai_skill_ratio);
+        })
+        .catch(error => console.log(error));
+}
+
+function predictJobs() {
+    let year = getYear();
+    if (!year) return;
+
+    fetch(`http://localhost:8081/api/predict-high-demand-jobs?year=${year}`)
+        .then(res => res.json())
+        .then(data => {
+            let output = data.top_jobs.join("<br>");
+            updateTable("High Demand Jobs", data.year, output);
+
+            document.getElementById("chartTitle").innerHTML =
+                `<i class="fa-solid fa-chart-column"></i> Top Jobs Chart (${year})`;
+
+            const labels = data.top_jobs;
+            const values = data.top_jobs.map((_, i) => data.top_jobs.length - i);
+
+            renderJobsChart(labels, values, data.year);
+        })
+        .catch(error => console.log(error));
+}
+
+function predictSkills() {
+    let year = getYear();
+    if (!year) return;
+
+    fetch(`http://localhost:8081/api/predict-top-skills?year=${year}`)
+        .then(res => res.json())
+        .then(data => {
+            
+            let output = "";
+
+            data.top_skills.forEach(skill => {
+                output += `<span class="skill-tag">${skill}</span>`;
+            });
+
+            updateTable("Future Top Skills", data.year, output);
+        })
+        .catch(error => console.log(error));;
+}
+
+function predictAutomationRisk() {
+    let year = getYear();
+    if (!year) return;
+
+    fetch(`http://localhost:8081/api/predict-ai-automation-risk?year=${year}`)
+        .then(res => res.json())
+        .then(data => {
+            let output = "";
+
+            data.high_risk_jobs.forEach(job => {
+                
+                let colorClass = "badge-low";
+
+                if (job.predicted_risk === "High") colorClass = "badge-high";
+                else if (job.predicted_risk === "Medium") colorClass = "badge-medium";
+
+                output += `
+                    ${job.rank}. ${job.job_title}
+                    <span class="${colorClass}">${job.predicted_risk}</span>
+                    (${job.risk_percentage.toFixed(1)}%)<br>
+                 `;
+            });
+
+            updateTable("AI Automation Risk Jobs", data.year, output);
+
+            const labels = data.high_risk_jobs.map(job => job.job_title);
+            const values = data.high_risk_jobs.map(job => job.risk_percentage);
+
+            renderRiskChart(labels, values, data.year);
+        })
+        .catch(error => console.log(error));;
+}
+
+function renderJobsChart(labels, values) {
+    if (jobsChart) {
+        jobsChart.destroy();
+    }
+
+    const ctx = document.getElementById("jobsChart").getContext("2d");
+
+    jobsChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Top Job Ranking",
+                data: values,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function renderRiskChart(labels, values, year) {
+    if (riskChart) {
+        riskChart.destroy();
+    }
+
+    const ctx = document.getElementById("riskChart").getContext("2d");
+
+    riskChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `High-Risk Jobs in ${year}`,
+                data: values,
+                backgroundColor: [
+                    "#dc3545",
+                    "#e35d6a",
+                    "#ea868f",
+                    "#f1aeb5",
+                    "#f8d7da",
+                    "#ff6b6b",
+                    "#ff8787",
+                    "#ffa8a8",
+                    "#ffc9c9",
+                    "#ffe3e3"
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: `AI Automation Risk Percentage for ${year}`
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+
+    let btn = document.getElementById("modeBtn");
+    let isDark = document.body.classList.contains("dark");
+
+    localStorage.setItem("darkMode", isDark);
+
+    if (isDark) {
+        btn.innerHTML = "☀️ Light Mode";
+    } else {
+        btn.innerHTML = "🌙 Dark Mode";
+    }
+}
+
+function updateTable(category, year, resultHtml) {
+    const tableBody = document.getElementById("resultBody");
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td><b>${category}</b></td>
+        <td>${year}</td>
+        <td>${resultHtml}</td>
+    `;
+
+    tableBody.appendChild(row);
+}
+
+function clearTable() {
+    document.getElementById("resultBody").innerHTML = "";
+
+    if (jobsChart) {
+        jobsChart.destroy();
+        jobsChart = null;
+    }
+
+    if (riskChart) {
+        riskChart.destroy();
+        riskChart = null;
+    }
+
+    document.getElementById("chartTitle").innerHTML =
+        '<i class="fa-solid fa-chart-column"></i> Top Jobs Chart';
+        
+    document.getElementById("riskChartTitle").innerHTML =
+        '<i class="fa-solid fa-triangle-exclamation"></i> High-Risk Jobs Chart';    
+}
+
+
+
+window.onload = () => {
+    if(localStorage.getItem("darkMode") === "true"){
+        document.body.classList.add("dark");
+        document.getElementById("modeBtn").innerHTML = "☀️ Light Mode";
+    }
+};
+
+</script>
+
+</body>
+</html>
